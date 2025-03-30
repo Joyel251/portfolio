@@ -1,125 +1,100 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { motion, useMotionValue, useSpring } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 
-export default function CustomCursor() {
-  const [isHovering, setIsHovering] = useState(false)
-  const [isVisible, setIsVisible] = useState(false)
-
-  // Mouse position with spring physics for smoother movement
-  const mouseX = useMotionValue(0)
-  const mouseY = useMotionValue(0)
-
-  const springConfig = { damping: 25, stiffness: 300, mass: 0.5 }
-  const springX = useSpring(mouseX, springConfig)
-  const springY = useSpring(mouseY, springConfig)
+export default function NewLoadingAnimation() {
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Only enable custom cursor on non-touch devices
-    if (window.matchMedia("(pointer: fine)").matches) {
-      let lastTime = 0
-      const throttleInterval = 10 // Small throttle for smooth cursor movement
+    // Hide loading animation after it completes
+    const timer = setTimeout(() => {
+      setIsLoading(false)
+    }, 2000) // Reduced from 2500ms for faster loading
 
-      const updatePosition = (e: MouseEvent) => {
-        const now = Date.now()
-        if (now - lastTime < throttleInterval) return
-
-        lastTime = now
-        mouseX.set(e.clientX)
-        mouseY.set(e.clientY)
-        setIsVisible(true)
-      }
-
-      // Handle link hover
-      const handleElementEnter = () => {
-        setIsHovering(true)
-      }
-
-      const handleElementLeave = () => {
-        setIsHovering(false)
-      }
-
-      window.addEventListener("mousemove", updatePosition, { passive: true })
-
-      // Add event listeners to interactive elements
-      const interactiveElements = document.querySelectorAll("a, button, input, [role='button'], .letter")
-      interactiveElements.forEach((el) => {
-        el.addEventListener("mouseenter", handleElementEnter)
-        el.addEventListener("mouseleave", handleElementLeave)
-      })
-
-      // Hide when cursor leaves window
-      const handleMouseLeave = () => setIsVisible(false)
-      window.addEventListener("mouseout", handleMouseLeave)
-
-      return () => {
-        window.removeEventListener("mousemove", updatePosition)
-        window.removeEventListener("mouseout", handleMouseLeave)
-
-        interactiveElements.forEach((el) => {
-          el.removeEventListener("mouseenter", handleElementEnter)
-          el.removeEventListener("mouseleave", handleElementLeave)
-        })
-      }
-    }
-  }, [mouseX, mouseY])
-
-  // Don't render custom cursor on touch devices
-  if (typeof window !== "undefined" && window.matchMedia && !window.matchMedia("(pointer: fine)").matches) {
-    return null
-  }
+    return () => clearTimeout(timer)
+  }, [])
 
   return (
-    <>
-      {/* Main cursor dot */}
-      <motion.div
-        className="fixed z-[9999] pointer-events-none"
-        style={{
-          x: springX,
-          y: springY,
-          opacity: isVisible ? 0.8 : 0,
-        }}
-      >
-        {/* Star-shaped cursor */}
+    <AnimatePresence>
+      {isLoading && (
         <motion.div
-          className="relative"
-          animate={{
-            rotate: isHovering ? 45 : 0,
-            scale: isHovering ? 1.5 : 1,
-          }}
-          transition={{ duration: 0.2 }}
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black"
+          initial={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         >
-          <div
-            className="absolute bg-white"
-            style={{
-              width: "2px",
-              height: "16px",
-              left: "-1px",
-              top: "-8px",
-            }}
-          />
-          <div
-            className="absolute bg-white"
-            style={{
-              width: "16px",
-              height: "2px",
-              left: "-8px",
-              top: "-1px",
-            }}
-          />
-          <div
-            className="absolute bg-white rounded-full"
-            style={{
-              width: "4px",
-              height: "4px",
-              left: "-2px",
-              top: "-2px",
-            }}
-          />
+          <div className="relative flex flex-col items-center">
+            {/* Animated geometric loader */}
+            <div className="relative h-16 w-16 mb-6">
+              <motion.div
+                className="absolute inset-0 border border-white/20"
+                initial={{ opacity: 0, scale: 0.8, rotate: 0 }}
+                animate={{
+                  opacity: [0, 1, 0],
+                  scale: [0.8, 1, 0.8],
+                  rotate: 360,
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Number.POSITIVE_INFINITY,
+                  ease: "easeInOut",
+                }}
+              />
+
+              <motion.div
+                className="absolute inset-0 border border-white/40"
+                initial={{ opacity: 0, scale: 0.6, rotate: 45 }}
+                animate={{
+                  opacity: [0, 1, 0],
+                  scale: [0.6, 1, 0.6],
+                  rotate: [45, 405, 45],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Number.POSITIVE_INFINITY,
+                  ease: "easeInOut",
+                  delay: 0.2,
+                }}
+              />
+
+              <motion.div
+                className="absolute inset-0 border border-white/60"
+                initial={{ opacity: 0, scale: 0.4, rotate: 90 }}
+                animate={{
+                  opacity: [0, 1, 0],
+                  scale: [0.4, 1, 0.4],
+                  rotate: [90, 450, 90],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Number.POSITIVE_INFINITY,
+                  ease: "easeInOut",
+                  delay: 0.4,
+                }}
+              />
+            </div>
+
+            {/* Loading text */}
+            <motion.div
+              className="overflow-hidden h-6"
+              initial={{ width: 0 }}
+              animate={{ width: "auto" }}
+              transition={{ delay: 0.5, duration: 0.5 }}
+            >
+              <motion.div
+                className="text-sm tracking-[0.3em] uppercase text-white/70 font-light"
+                initial={{ y: 20 }}
+                animate={{ y: 0 }}
+                transition={{ delay: 0.7, duration: 0.3 }}
+              >
+                LOADING
+              </motion.div>
+            </motion.div>
+          </div>
         </motion.div>
-      </motion.div>
-    </>
+      )}
+    </AnimatePresence>
   )
 }
 
