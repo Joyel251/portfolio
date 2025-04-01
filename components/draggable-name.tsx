@@ -12,7 +12,9 @@ export default function DraggableName({ name, className = "" }: DraggableNamePro
   const containerRef = useRef<HTMLDivElement>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
-  const [letterColors, setLetterColors] = useState<string[]>(Array(name.length).fill(""))
+  const [letterStates, setLetterStates] = useState<{ isJapanese: boolean; color: string }[]>(
+    Array(name.length).fill({ isJapanese: false, color: "" })
+  )
   const controls = useAnimation()
 
   // Motion values for 3D rotation
@@ -89,18 +91,33 @@ export default function DraggableName({ name, className = "" }: DraggableNamePro
     })
   }
 
+  // English to Japanese character mapping (Katakana for foreign names)
+  const toJapanese = (letter: string): string => {
+    const mapping: { [key: string]: string } = {
+      'a': 'ア', 'b': 'ブ', 'c': 'ク', 'd': 'ド', 'e': 'エ',
+      'f': 'フ', 'g': 'グ', 'h': 'ハ', 'i': 'イ', 'j': 'ジ',
+      'k': 'ク', 'l': 'ル', 'm': 'ム', 'n': 'ン', 'o': 'オ',
+      'p': 'プ', 'q': 'ク', 'r': 'ル', 's': 'ス', 't': 'ト',
+      'u': 'ウ', 'v': 'ブ', 'w': 'ワ', 'x': 'クス', 'y': 'ヤ',
+      'z': 'ズ'
+    }
+    return mapping[letter.toLowerCase()] || letter
+  }
+
   // Generate random color for letter click
   const getRandomColor = () => {
-    // Use only white with varying opacity for monochrome theme
-    const opacity = Math.random() * 0.5 + 0.5 // Between 0.5 and 1
+    const opacity = Math.random() * 0.5 + 0.5
     return `rgba(255, 255, 255, ${opacity})`
   }
 
-  // Handle letter click to change color
+  // Handle letter click to change color and toggle Japanese
   const handleLetterClick = (index: number) => {
-    const newColors = [...letterColors]
-    newColors[index] = getRandomColor()
-    setLetterColors(newColors)
+    const newStates = [...letterStates]
+    newStates[index] = {
+      isJapanese: !newStates[index].isJapanese,
+      color: getRandomColor()
+    }
+    setLetterStates(newStates)
   }
 
   return (
@@ -134,7 +151,7 @@ export default function DraggableName({ name, className = "" }: DraggableNamePro
             key={index}
             className="letter inline-block cursor-pointer"
             style={{
-              color: letterColors[index] || "white",
+              color: letterStates[index].color || "white",
               transformStyle: "preserve-3d",
               transformOrigin: "center center",
               textShadow: "0 0 10px rgba(255, 255, 255, 0.3)",
@@ -155,11 +172,14 @@ export default function DraggableName({ name, className = "" }: DraggableNamePro
               },
             }}
           >
-            {letter === " " ? <span>&nbsp;</span> : letter}
+            {letter === " " ? (
+              <span>&nbsp;</span>
+            ) : (
+              letterStates[index].isJapanese ? toJapanese(letter) : letter
+            )}
           </motion.span>
         ))}
       </motion.div>
     </motion.div>
   )
 }
-

@@ -93,7 +93,7 @@ export default function CustomCursor() {
 
   return (
     <>
-      {/* Main cursor - cartoon rocket ship */}
+      {/* Vice City style arrow cursor */}
       <motion.div
         className="fixed z-[9999] pointer-events-none"
         style={{
@@ -101,101 +101,182 @@ export default function CustomCursor() {
           y: springY,
           transform: "translate(-50%, -50%)",
         }}
-        animate={{
-          scale: isClicking ? 0.8 : isHovering ? 1.2 : 1,
-          rotate: isHovering ? 15 : 0,
-        }}
-        transition={{
-          type: "spring",
-          stiffness: 150,
-          damping: 15,
-        }}
       >
-        <svg
-          width={isHovering ? "40" : "30"}
-          height={isHovering ? "40" : "30"}
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
+        <motion.div
           style={{
             opacity: isVisible ? 1 : 0,
-            transition: "opacity 0.3s, width 0.3s, height 0.3s",
+            transition: "opacity 0.15s",
+          }}
+          animate={{
+            scale: isClicking ? 0.9 : 1,
+          }}
+          transition={{
+            type: "spring",
+            stiffness: 400,
+            damping: 20,
           }}
         >
-          {/* Rocket body */}
-          <motion.path
-            d="M12 2L8 10H16L12 2Z"
-            fill="white"
-            animate={{
-              fill: isHovering ? "#4477ff" : "white",
-            }}
-          />
-          <motion.path
-            d="M8 10H16V18H8V10Z"
-            fill="white"
-            animate={{
-              fill: isHovering ? "#4477ff" : "white",
-            }}
-          />
+          <svg
+            width="32"
+            height="32"
+            viewBox="0 0 32 32"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <defs>
+              {/* Vice City gradient */}
+              <linearGradient id="viceGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style={{ stopColor: '#FF1E6F' }} />
+                <stop offset="50%" style={{ stopColor: '#FF38BD' }} />
+                <stop offset="100%" style={{ stopColor: '#FF8D1E' }} />
+              </linearGradient>
+              
+              {/* Palm tree pattern */}
+              <pattern id="palmPattern" x="0" y="0" width="32" height="32" patternUnits="userSpaceOnUse">
+                <path
+                  d="M16 12C16 12 18 10 19 8C20 6 21 5 21 5M16 12C16 12 14 10 13 8C12 6 11 5 11 5M16 12V18"
+                  stroke="rgba(255,255,255,0.2)"
+                  strokeWidth="0.5"
+                />
+              </pattern>
+            </defs>
 
-          {/* Windows */}
-          <circle cx="12" cy="14" r="1.5" fill="#000" />
+            {/* Main cursor arrow */}
+            <path
+              d="M8 8L8 20L12 16L16 24L20 22L16 14L24 14L8 8Z"
+              fill="url(#viceGradient)"
+              stroke="#FF1E6F"
+              strokeWidth="1"
+            />
+            
+            {/* Palm tree overlay */}
+            <path
+              d="M8 8L8 20L12 16L16 24L20 22L16 14L24 14L8 8Z"
+              fill="url(#palmPattern)"
+            />
 
-          {/* Fins */}
-          <motion.path
-            d="M8 12L5 14V16L8 14V12Z"
-            fill="white"
-            animate={{
-              fill: isHovering ? "#ff4477" : "white",
-            }}
-          />
-          <motion.path
-            d="M16 12L19 14V16L16 14V12Z"
-            fill="white"
-            animate={{
-              fill: isHovering ? "#ff4477" : "white",
-            }}
-          />
-
-          {/* Flames - only show when clicking */}
-          <motion.path
-            d="M10 18L8 22L12 20L16 22L14 18"
-            fill="#ff4477"
-            animate={{
-              opacity: isClicking ? 1 : 0,
-              y: isClicking ? [0, 2, 0] : 0,
-            }}
-            transition={{
-              y: {
-                repeat: Number.POSITIVE_INFINITY,
-                duration: 0.3,
-              },
-            }}
-          />
-        </svg>
+            {/* Neon glow effect */}
+            <motion.path
+              d="M8 8L8 20L12 16L16 24L20 22L16 14L24 14L8 8Z"
+              stroke="#FF1E6F"
+              strokeWidth="2"
+              strokeOpacity="0.5"
+              fill="none"
+              animate={{
+                strokeOpacity: [0.2, 0.5, 0.2],
+                scale: isHovering ? 1.1 : 1,
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+              }}
+            />
+          </svg>
+        </motion.div>
       </motion.div>
 
-      {/* Trail effect */}
-      <motion.div
-        className="fixed z-[9998] pointer-events-none w-1 h-1 rounded-full bg-white/30"
-        style={{
-          x: springX,
-          y: springY,
-          opacity: isVisible && !isHovering ? 0.5 : 0,
-          transition: "opacity 0.3s",
-          filter: "blur(1px)",
-        }}
-        animate={{
-          scale: [1, 15],
-          opacity: [0.5, 0],
-        }}
-        transition={{
-          repeat: Number.POSITIVE_INFINITY,
-          duration: 1.5,
-          ease: "linear",
-        }}
-      />
+      {/* Click effect */}
+      {isClicking && (
+        <motion.div
+          className="fixed z-[9998] pointer-events-none"
+          style={{
+            x: springX,
+            y: springY,
+            transform: "translate(-50%, -50%)",
+          }}
+        >
+          {/* Simple scale animation for immediate feedback */}
+          <motion.div
+            initial={{ scale: 1, opacity: 0.5 }}
+            animate={{ scale: 1.2, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <svg width="32" height="32" viewBox="0 0 32 32">
+              <path
+                d="M8 8L8 20L12 16L16 24L20 22L16 14L24 14L8 8Z"
+                stroke="url(#viceGradient)"
+                strokeWidth="1"
+                fill="none"
+              />
+            </svg>
+          </motion.div>
+        </motion.div>
+      )}
+
+      {/* Hover effect */}
+      {isHovering && (
+        <motion.div
+          className="fixed z-[9997] pointer-events-none"
+          style={{
+            x: springX,
+            y: springY,
+            transform: "translate(-50%, -50%)",
+          }}
+        >
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            {/* Rotating highlight effect */}
+            <motion.svg 
+              width="48" 
+              height="48" 
+              viewBox="0 0 32 32"
+              animate={{
+                rotate: 360
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "linear"
+              }}
+            >
+              {/* Gradient definition for rotating effect */}
+              <defs>
+                <linearGradient id="rotatingGradient" gradientTransform="rotate(90)">
+                  <stop offset="0%" stopColor="#FF1E6F" stopOpacity="0.6" />
+                  <stop offset="50%" stopColor="#FF38BD" stopOpacity="0.3" />
+                  <stop offset="100%" stopColor="#FF8D1E" stopOpacity="0" />
+                </linearGradient>
+              </defs>
+              
+              {/* Outer rotating glow */}
+              <path
+                d="M8 8L8 20L12 16L16 24L20 22L16 14L24 14L8 8Z"
+                stroke="url(#rotatingGradient)"
+                strokeWidth="2"
+                fill="none"
+                strokeDasharray="2 2"
+              />
+            </motion.svg>
+
+            {/* Static outer ring */}
+            <svg
+              width="48"
+              height="48"
+              viewBox="0 0 32 32"
+              style={{ position: 'absolute', top: 0, left: 0 }}
+            >
+              <motion.path
+                d="M8 8L8 20L12 16L16 24L20 22L16 14L24 14L8 8Z"
+                stroke="url(#viceGradient)"
+                strokeWidth="1"
+                fill="none"
+                animate={{
+                  scale: [1, 1.1, 1],
+                  opacity: [0.3, 0.6, 0.3]
+                }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              />
+            </svg>
+          </motion.div>
+        </motion.div>
+      )}
     </>
   )
 }
-
