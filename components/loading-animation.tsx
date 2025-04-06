@@ -1,127 +1,165 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { useEffect, useState, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import anime from 'animejs'
 
-export default function SpaceLoading() {
-  const [isLoading, setIsLoading] = useState(true)
+interface LoadingAnimationProps {
+  onLoadingComplete: () => void
+}
+
+const quotes = [
+  "When I'm gone, they'll just find another monster.",
+  "We're more ghosts than people.",
+  "Design is not just what it looks like, it's how it works.",
+  "Code is poetry written in logic.",
+  "In the world of digital art, creativity knows no bounds."
+]
+
+export default function LoadingAnimation({ onLoadingComplete }: LoadingAnimationProps) {
   const [progress, setProgress] = useState(0)
+  const [currentQuote, setCurrentQuote] = useState("")
+  const [isVisible, setIsVisible] = useState(true)
+  const svgRef = useRef<SVGSVGElement>(null)
+  const pathRef = useRef<SVGPathElement>(null)
 
   useEffect(() => {
+    // Select random quote
+    setCurrentQuote(quotes[Math.floor(Math.random() * quotes.length)])
+
+    // Animate SVG path
+    if (pathRef.current) {
+      anime({
+        targets: pathRef.current,
+        strokeDashoffset: [anime.setDashoffset, 0],
+        easing: 'easeInOutSine',
+        duration: 1500,
+        delay: 300,
+        loop: true,
+        direction: 'alternate'
+      })
+    }
+
+    // Rotate SVG
+    if (svgRef.current) {
+      anime({
+        targets: svgRef.current,
+        rotate: '360deg',
+        easing: 'linear',
+        duration: 10000,
+        loop: true
+      })
+    }
+
     // Simulate loading progress
     const interval = setInterval(() => {
-      setProgress((prev) => {
-        const newProgress = prev + Math.random() * 15
-        return newProgress > 100 ? 100 : newProgress
+      setProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval)
+          setTimeout(() => {
+            setIsVisible(false)
+            setTimeout(() => {
+              onLoadingComplete()
+            }, 1000)
+          }, 500)
+          return 100
+        }
+        return prev + 1
       })
-    }, 200)
+    }, 30)
 
-    // Hide loading animation after it completes
-    const timer = setTimeout(() => {
-      clearInterval(interval)
-      setProgress(100)
-      setTimeout(() => {
-        setIsLoading(false)
-      }, 500)
-    }, 2000)
-
-    return () => {
-      clearTimeout(timer)
-      clearInterval(interval)
-    }
-  }, [])
+    return () => clearInterval(interval)
+  }, [onLoadingComplete])
 
   return (
-    <AnimatePresence>
-      {isLoading && (
+    <AnimatePresence mode="wait">
+      {isVisible && (
         <motion.div
-          className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#050510]"
+          className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center vignette"
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 1, ease: "easeInOut" }}
         >
-          <div className="relative w-40 h-40 mb-8">
-            {/* Space-themed loading animation */}
+          <div className="w-full max-w-2xl px-4 flex flex-col items-center">
+            {/* RDR2-style Loading Text */}
             <motion.div
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, ease: "easeOut" }}
+              className="mb-12"
             >
-              {/* Outer orbit */}
-              <motion.div
-                className="absolute top-0 left-0 w-full h-full rounded-full border border-white/30"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 8, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-              >
-                {/* Planet */}
-                <motion.div
-                  className="absolute w-4 h-4 rounded-full bg-white"
-                  style={{ top: "0%", left: "50%", transform: "translate(-50%, -50%)" }}
-                />
-              </motion.div>
-
-              {/* Middle orbit */}
-              <motion.div
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-full border border-white/40"
-                animate={{ rotate: -360 }}
-                transition={{ duration: 5, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-              >
-                {/* Planet */}
-                <motion.div
-                  className="absolute w-3 h-3 rounded-full bg-white/80"
-                  style={{ top: "0%", left: "50%", transform: "translate(-50%, -50%)" }}
-                />
-              </motion.div>
-
-              {/* Inner orbit */}
-              <motion.div
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full border border-white/50"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 3, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-              >
-                {/* Planet */}
-                <motion.div
-                  className="absolute w-2 h-2 rounded-full bg-white/90"
-                  style={{ top: "0%", left: "50%", transform: "translate(-50%, -50%)" }}
-                />
-              </motion.div>
-
-              {/* Center star */}
-              <motion.div
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white"
-                animate={{
-                  scale: [1, 1.2, 1],
-                  boxShadow: [
-                    "0 0 10px rgba(255, 255, 255, 0.5)",
-                    "0 0 20px rgba(255, 255, 255, 0.8)",
-                    "0 0 10px rgba(255, 255, 255, 0.5)",
-                  ],
-                }}
-                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
-              />
+              <h1 className="text-white/90 text-4xl md:text-5xl font-serif tracking-wider rdr2-text-shadow">
+                LOADING
+              </h1>
             </motion.div>
-          </div>
 
-          {/* Progress bar */}
-          <div className="w-48 h-px bg-white/10 mb-4 relative overflow-hidden">
+            {/* Quote */}
             <motion.div
-              className="absolute top-0 left-0 h-full bg-white"
-              initial={{ width: "0%" }}
-              animate={{ width: `${progress}%` }}
-              transition={{ ease: "easeOut" }}
-            />
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.7 }}
+              transition={{ duration: 1, delay: 0.5 }}
+              className="mb-16 px-4 text-center"
+            >
+              <p className="text-white/70 text-lg md:text-xl italic font-serif rdr2-text-shadow">
+                "{currentQuote}"
+              </p>
+            </motion.div>
+
+            {/* Progress Bar Container */}
+            <div className="w-full max-w-md relative">
+              <motion.div
+                className="h-0.5 w-full bg-white/20"
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ duration: 0.5 }}
+              />
+              
+              {/* Progress Bar Fill */}
+              <motion.div
+                className="absolute top-0 left-0 h-0.5 bg-white"
+                style={{ width: `${progress}%` }}
+                transition={{ duration: 0.3 }}
+              />
+
+              {/* Loading Percentage */}
+              <motion.div
+                className="absolute -top-8 text-white/70 text-sm tracking-widest rdr2-text-shadow"
+                style={{ left: `${progress}%`, transform: 'translateX(-50%)' }}
+              >
+                {progress}%
+              </motion.div>
+            </div>
+
+            {/* Animated SVG */}
+            <svg
+              ref={svgRef}
+              className="absolute bottom-12 w-24 h-24"
+              viewBox="0 0 100 100"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                ref={pathRef}
+                d="M50 10 L90 50 L50 90 L10 50 Z"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <circle
+                cx="50"
+                cy="50"
+                r="40"
+                stroke="white"
+                strokeWidth="1"
+                strokeDasharray="4 4"
+                className="opacity-30"
+              />
+            </svg>
           </div>
 
-          {/* Loading text */}
-          <motion.div
-            className="text-xs tracking-[0.3em] uppercase text-white/70 font-space"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5, duration: 0.5 }}
-          >
-            {progress < 100 ? "INITIALIZING" : "READY"}
-          </motion.div>
+          {/* Enhanced Vignette Overlay */}
+          <div className="absolute inset-0 bg-gradient-radial from-transparent via-black/30 to-black/80 pointer-events-none" />
         </motion.div>
       )}
     </AnimatePresence>
